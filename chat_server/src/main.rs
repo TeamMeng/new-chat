@@ -1,5 +1,5 @@
 use anyhow::Result;
-use new_chat::{AppConfig, get_router};
+use chat_server::{AppConfig, get_router};
 use tokio::net::TcpListener;
 use tracing::{info, level_filters::LevelFilter};
 use tracing_subscriber::{Layer as _, fmt::Layer, layer::SubscriberExt, util::SubscriberInitExt};
