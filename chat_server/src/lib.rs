@@ -1,16 +1,15 @@
 mod config;
+mod error;
 mod handlers;
+mod models;
 
-use crate::handlers::{
-    create_chat_handler, delete_chat_handler, index_handler, list_chat_handler,
-    list_messages_handler, send_message_handler, signin_handler, signup_handler,
-    update_chat_handler,
-};
+use crate::handlers::*;
 use axum::{
     Router,
     routing::{get, patch, post},
 };
 pub use config::AppConfig;
+pub use error::AppError;
 use std::{ops::Deref, sync::Arc};
 
 #[derive(Debug, Clone)]
