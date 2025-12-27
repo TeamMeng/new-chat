@@ -22,8 +22,8 @@ jobs:
     services:
       postgres:
         image: postgres:14.5
-        # env:
-        #   POSTGRES_PASSWORD: postgres
+        env:
+          POSTGRES_PASSWORD:
         ports:
           - 5432:5432
         # Set health checks to wait until postgres has started
@@ -31,7 +31,6 @@ jobs:
           --health-cmd pg_isready
           --health-interval 10s
           --health-timeout 5s
-          --health-retries 5
     steps:
       - uses: actions/checkout@v4
         with:
