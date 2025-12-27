@@ -1,10 +1,42 @@
+use axum::{Json, http::StatusCode, response::IntoResponse};
+use serde::{Deserialize, Serialize};
 use thiserror::Error;
+
+#[derive(Debug, Serialize, Deserialize)]
+pub struct ErrorOutput {
+    pub error: String,
+}
 
 #[derive(Debug, Error)]
 pub enum AppError {
+    #[error("email already exists: {0}")]
+    EmailAleardyExists(String),
+
     #[error("sqlx error: {0}")]
     SqlxError(#[from] sqlx::Error),
 
     #[error("Argon2 password hash error: {0}")]
     Argon2Error(#[from] argon2::password_hash::Error),
+
+    #[error("jwt error: {0}")]
+    JwtError(#[from] jwt_simple::Error),
+}
+
+impl ErrorOutput {
+    pub fn new(error: String) -> Self {
+        Self { error }
+    }
+}
+
+impl IntoResponse for AppError {
+    fn into_response(self) -> axum::response::Response {
+        let status = match &self {
+            Self::EmailAleardyExists(_) => StatusCode::CONFLICT,
+            Self::SqlxError(_) => StatusCode::INTERNAL_SERVER_ERROR,
+            Self::Argon2Error(_) => StatusCode::UNPROCESSABLE_ENTITY,
+            Self::JwtError(_) => StatusCode::FORBIDDEN,
+        };
+
+        (status, Json(ErrorOutput::new(self.to_string()))).into_response()
+    }
 }

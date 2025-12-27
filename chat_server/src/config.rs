@@ -1,16 +1,23 @@
-use std::{env, fs::File};
-
 use anyhow::{Result, bail};
 use serde::{Deserialize, Serialize};
+use std::{env, fs::File};
 
 #[derive(Debug, Serialize, Deserialize)]
 pub struct AppConfig {
     pub server: ServerConfig,
+    pub auth: AuthConfig,
+}
+
+#[derive(Debug, Serialize, Deserialize)]
+pub struct AuthConfig {
+    pub sk: String,
+    pub pk: String,
 }
 
 #[derive(Debug, Serialize, Deserialize)]
 pub struct ServerConfig {
     pub port: u16,
+    pub db_url: String,
 }
 
 impl AppConfig {
