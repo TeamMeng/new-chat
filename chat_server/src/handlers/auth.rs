@@ -61,7 +61,7 @@ mod tests {
         let email = "TeamMeng@123.com";
         let password = "123456";
 
-        let input = CreateUser::new(fullname, email, password);
+        let input = CreateUser::new(fullname, "none", email, password);
 
         let ret = signup_handler(State(state), Json(input))
             .await?
@@ -84,7 +84,7 @@ mod tests {
         let email = "TeamMeng@123.com";
         let password = "123456";
 
-        let input = CreateUser::new(fullname, email, password);
+        let input = CreateUser::new(fullname, "none", email, password);
 
         signup_handler(State(state.clone()), Json(input.clone())).await?;
 
@@ -108,7 +108,7 @@ mod tests {
         let email = "TeamMeng@123.com";
         let password = "123456";
 
-        let input = CreateUser::new(fullname, email, password);
+        let input = CreateUser::new(fullname, "none", email, password);
         signup_handler(State(state.clone()), Json(input)).await?;
 
         let input = SigninUser::new(email, password);

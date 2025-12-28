@@ -57,7 +57,7 @@ mod tests {
     async fn verify_token_middleware_should_work() -> Result<()> {
         let (_tdb, state) = AppState::new_for_test().await?;
 
-        let user = User::new("TeamMeng", "TeamMeng@123.com");
+        let user = User::new(1, "TeamMeng", "TeamMeng@123.com");
         let token = state.ek.sign(user)?;
 
         let app = Router::new()

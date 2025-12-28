@@ -70,7 +70,7 @@ mod tests {
 
         let fullname = "TeamMeng";
         let email = "TeamMeng@123.com";
-        let user = User::new(fullname, email);
+        let user = User::new(1, fullname, email);
 
         let token = ek.sign(user.clone())?;
         let ret = dk.verify(&token)?;

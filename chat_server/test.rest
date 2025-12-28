@@ -1,15 +1,16 @@
-### signup user
+### signup user1
 
 POST http://localhost:6688/api/signup
 Content-Type: application/json
 
 {
     "fullname": "TeamMeng",
+    "workspace": "acme",
     "email": "TeamMeng@123.com",
     "password": "123456"
 }
 
-### signin user (valid)
+### signin user1 (valid)
 # @name siginin
 POST http://localhost:6688/api/signin
 Content-Type: application/json
@@ -22,7 +23,36 @@ Content-Type: application/json
 ### Set token variable
 @token = {{siginin.response.body.token}}
 
-### chat api
+### signup user2
+
+POST http://localhost:6688/api/signup
+Content-Type: application/json
+
+{
+    "fullname": "TeamZhang",
+    "workspace": "acme",
+    "email": "TeamZhang@123.com",
+    "password": "123456"
+}
+
+### signin user2 (valid)
+# @name siginin
+POST http://localhost:6688/api/signin
+Content-Type: application/json
+
+{
+    "email": "TeamZhang@123.com",
+    "password": "123456"
+}
+
+### Set token variable
+@token = {{siginin.response.body.token}}
+
+### get chat api
 
 GET http://localhost:6688/api/chat
+Authorization: Bearer {{token}}
+
+### get user list
+GET http://localhost:6688/api/users
 Authorization: Bearer {{token}}
