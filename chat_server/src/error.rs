@@ -12,6 +12,12 @@ pub enum AppError {
     #[error("email already exists: {0}")]
     EmailAleardyExists(String),
 
+    #[error("create chat error: {0}")]
+    CreateChatError(String),
+
+    #[error("not found error: {0}")]
+    NotFound(String),
+
     #[error("sqlx error: {0}")]
     SqlxError(#[from] sqlx::Error),
 
@@ -32,6 +38,8 @@ impl IntoResponse for AppError {
     fn into_response(self) -> axum::response::Response {
         let status = match &self {
             Self::EmailAleardyExists(_) => StatusCode::CONFLICT,
+            Self::CreateChatError(_) => StatusCode::BAD_REQUEST,
+            Self::NotFound(_) => StatusCode::NOT_FOUND,
             Self::SqlxError(_) => StatusCode::INTERNAL_SERVER_ERROR,
             Self::Argon2Error(_) => StatusCode::UNPROCESSABLE_ENTITY,
             Self::JwtError(_) => StatusCode::FORBIDDEN,
