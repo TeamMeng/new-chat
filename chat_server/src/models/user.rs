@@ -150,21 +150,19 @@ impl SigninUser {
 #[cfg(test)]
 mod tests {
     use super::*;
+    use crate::test_util::get_test_pool;
     use anyhow::Result;
-    use sqlx_db_tester::TestPg;
 
     #[tokio::test]
-    async fn create_and_find_user_should_work() -> Result<()> {
-        let tdb = TestPg::new(
-            "postgres://postgres:postgres@localhost:5432".to_string(),
-            std::path::Path::new("../migrations"),
-        );
-        let pool = tdb.get_pool().await;
+    async fn create_user_should_work() -> Result<()> {
+        let (_tdb, pool) = get_test_pool(None).await;
+
         let fullname = "TeamMeng";
         let workspace = "none";
         let email = "TeamMeng@123.com";
         let password = "123456";
 
+        // create user success
         let input = CreateUser::new(fullname, workspace, email, password);
 
         let user = User::create(&input, &pool).await?;
@@ -173,36 +171,48 @@ mod tests {
         assert_eq!(email, &user.email);
         assert!(user.id > 0);
 
+        // failed to create user
+        let ret = User::create(&input, &pool).await;
+        assert!(ret.is_err());
+
+        Ok(())
+    }
+
+    #[tokio::test]
+    async fn find_user_by_email_should_work() -> Result<()> {
+        let (_tdb, pool) = get_test_pool(None).await;
+        let email = "Test@123.com";
+
         let user = User::find_by_email(email, &pool).await?;
 
         assert!(user.is_some());
         let user = user.unwrap();
-        assert_eq!(fullname, &user.fullname);
-        assert_eq!(email, &user.email);
+        assert_eq!(user.fullname, "TeamTest");
+        assert_eq!(user.email, email);
 
-        let input = SigninUser::new(email, password);
+        let input = SigninUser::new(email, "123456");
 
         let user = User::verify(&input, &pool).await?;
         assert!(user.is_some());
+
+        // failed to find user by email
+        let ret = User::find_by_email("TeamMeng@123.com", &pool).await?;
+        assert!(ret.is_none());
 
         Ok(())
     }
 
     #[tokio::test]
     async fn create_duplicate_user_should_fail() -> Result<()> {
-        let tdb = TestPg::new(
-            "postgres://postgres:postgres@localhost:5432".to_string(),
-            std::path::Path::new("../migrations"),
-        );
-        let pool = tdb.get_pool().await;
-        let fullname = "TeamMeng";
-        let workspace = "none";
-        let email = "TeamMeng@123.com";
+        let (_tdb, pool) = get_test_pool(None).await;
+
+        let fullname = "TeamTest";
+        let workspace = "acme";
+        let email = "Test@123.com";
         let password = "123456";
 
         let input = CreateUser::new(fullname, workspace, email, password);
 
-        User::create(&input, &pool).await?;
         let ret = User::create(&input, &pool).await;
 
         if let Err(AppError::EmailAleardyExists(email)) = ret {

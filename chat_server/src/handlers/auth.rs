@@ -80,13 +80,12 @@ mod tests {
     async fn signup_duplicate_user_should_409() -> Result<()> {
         let (_tdb, state) = AppState::new_for_test().await?;
 
-        let fullname = "TeamMeng";
-        let email = "TeamMeng@123.com";
+        let fullname = "TeamTest";
+        let email = "Test@123.com";
         let password = "123456";
+        let workspace = "acme";
 
-        let input = CreateUser::new(fullname, "none", email, password);
-
-        signup_handler(State(state.clone()), Json(input.clone())).await?;
+        let input = CreateUser::new(fullname, workspace, email, password);
 
         let ret = signup_handler(State(state), Json(input.clone()))
             .await
@@ -95,7 +94,7 @@ mod tests {
         assert_eq!(ret.status(), StatusCode::CONFLICT);
         let body = ret.into_body().collect().await?.to_bytes();
         let ret: ErrorOutput = serde_json::from_slice(&body)?;
-        assert_eq!(ret.error, "email already exists: TeamMeng@123.com");
+        assert_eq!(ret.error, format!("email already exists: {}", email));
 
         Ok(())
     }
@@ -104,12 +103,8 @@ mod tests {
     async fn signin_handler_should_work() -> Result<()> {
         let (_tdb, state) = AppState::new_for_test().await?;
 
-        let fullname = "TeamMeng";
-        let email = "TeamMeng@123.com";
+        let email = "Test@123.com";
         let password = "123456";
-
-        let input = CreateUser::new(fullname, "none", email, password);
-        signup_handler(State(state.clone()), Json(input)).await?;
 
         let input = SigninUser::new(email, password);
         let ret = signin_handler(State(state), Json(input))
