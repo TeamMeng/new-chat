@@ -18,6 +18,9 @@ pub enum AppError {
     #[error("not found error: {0}")]
     NotFound(String),
 
+    #[error("io error: {0}")]
+    IoError(#[from] std::io::Error),
+
     #[error("sqlx error: {0}")]
     SqlxError(#[from] sqlx::Error),
 
@@ -40,6 +43,7 @@ impl IntoResponse for AppError {
             Self::EmailAleardyExists(_) => StatusCode::CONFLICT,
             Self::CreateChatError(_) => StatusCode::BAD_REQUEST,
             Self::NotFound(_) => StatusCode::NOT_FOUND,
+            Self::IoError(_) => StatusCode::INTERNAL_SERVER_ERROR,
             Self::SqlxError(_) => StatusCode::INTERNAL_SERVER_ERROR,
             Self::Argon2Error(_) => StatusCode::UNPROCESSABLE_ENTITY,
             Self::JwtError(_) => StatusCode::FORBIDDEN,
