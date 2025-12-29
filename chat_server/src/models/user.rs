@@ -175,6 +175,22 @@ impl SigninUser {
 }
 
 #[cfg(test)]
+impl User {
+    pub fn new(id: i64, fullname: &str, email: &str) -> User {
+        use chrono::DateTime;
+
+        Self {
+            id,
+            ws_id: 0,
+            fullname: fullname.to_string(),
+            email: email.to_string(),
+            password_hash: None,
+            created_at: DateTime::default(),
+        }
+    }
+}
+
+#[cfg(test)]
 mod tests {
     use super::*;
     use crate::test_util::get_test_pool;

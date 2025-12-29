@@ -1,5 +1,6 @@
 mod chat;
 mod file;
+mod message;
 mod user;
 mod workspace;
 
@@ -57,20 +58,18 @@ pub enum ChatType {
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct ChatFile {
+    pub ws_id: u64,
     pub ext: String, // extract ext from filename or mine type
     pub hash: String,
 }
 
-#[cfg(test)]
-impl User {
-    pub fn new(id: i64, fullname: &str, email: &str) -> User {
-        Self {
-            id,
-            ws_id: 0,
-            fullname: fullname.to_string(),
-            email: email.to_string(),
-            password_hash: None,
-            created_at: DateTime::default(),
-        }
-    }
+#[allow(dead_code)]
+#[derive(Debug, Clone, FromRow, Serialize, Deserialize, PartialEq)]
+pub struct Message {
+    pub id: i64,
+    pub chat_id: i64,
+    pub sender_id: i64,
+    pub content: String,
+    pub files: Vec<String>,
+    pub created_at: DateTime<Utc>,
 }
