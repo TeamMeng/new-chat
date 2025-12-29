@@ -1,7 +1,7 @@
 use crate::{
     AppError, AppState,
     error::ErrorOutput,
-    models::{CreateUser, SigninUser, User},
+    models::{CreateUser, SigninUser},
 };
 use axum::{Json, extract::State, http::StatusCode, response::IntoResponse};
 use serde::{Deserialize, Serialize};
@@ -15,7 +15,7 @@ pub(crate) async fn signup_handler(
     State(state): State<AppState>,
     Json(input): Json<CreateUser>,
 ) -> Result<impl IntoResponse, AppError> {
-    let user = User::create(&input, &state.pool).await?;
+    let user = state.create_user(&input).await?;
     let token = state.ek.sign(user)?;
     let body = Json(AuthOutput::new(&token));
     Ok((StatusCode::CREATED, body))
@@ -25,7 +25,7 @@ pub(crate) async fn signin_handler(
     State(state): State<AppState>,
     Json(input): Json<SigninUser>,
 ) -> Result<impl IntoResponse, AppError> {
-    let user = User::verify(&input, &state.pool).await?;
+    let user = state.verify_user(&input).await?;
     match user {
         Some(user) => {
             let token = state.ek.sign(user)?;

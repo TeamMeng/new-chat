@@ -1,11 +1,9 @@
 use crate::{
-    AppError,
-    models::{Chat, ChatType, ChatUser},
+    AppError, AppState,
+    models::{Chat, ChatType},
 };
 use serde::{Deserialize, Serialize};
-use sqlx::PgPool;
 
-#[allow(dead_code)]
 #[derive(Debug, Default, Serialize, Deserialize)]
 pub struct CreateChat {
     pub name: Option<String>,
@@ -13,9 +11,8 @@ pub struct CreateChat {
     pub public: bool,
 }
 
-#[allow(dead_code)]
-impl Chat {
-    pub async fn create(input: &CreateChat, ws_id: u64, pool: &PgPool) -> Result<Self, AppError> {
+impl AppState {
+    pub async fn create_chat(&self, input: &CreateChat, ws_id: u64) -> Result<Chat, AppError> {
         let len = input.members.len();
         if len < 2 {
             return Err(AppError::CreateChatError(
@@ -30,7 +27,7 @@ impl Chat {
         };
 
         // verify if all members exists
-        let users = ChatUser::fetch_by_ids(&input.members, pool).await?;
+        let users = self.fetch_chat_user_by_ids(&input.members).await?;
         if users.len() != len {
             return Err(AppError::CreateChatError(
                 "some users not exists".to_string(),
@@ -60,13 +57,13 @@ impl Chat {
         .bind(&input.name)
         .bind(chat_type)
         .bind(&input.members)
-        .fetch_one(pool)
+        .fetch_one(&self.pool)
         .await?;
 
         Ok(chat)
     }
 
-    pub async fn fetch_all(ws_id: u64, pool: &PgPool) -> Result<Vec<Self>, AppError> {
+    pub async fn fetch_all_chats(&self, ws_id: u64) -> Result<Vec<Chat>, AppError> {
         let chats = sqlx::query_as(
             "
             SELECT id, ws_id, name, type, members, created_at
@@ -75,12 +72,12 @@ impl Chat {
             ",
         )
         .bind(ws_id as i64)
-        .fetch_all(pool)
+        .fetch_all(&self.pool)
         .await?;
         Ok(chats)
     }
 
-    pub async fn get_by_id(id: u64, pool: &PgPool) -> Result<Option<Self>, AppError> {
+    pub async fn get_chat_by_id(&self, id: u64) -> Result<Option<Chat>, AppError> {
         let chat = sqlx::query_as(
             "
             SELECT id, ws_id, name, type, members, created_at
@@ -89,7 +86,7 @@ impl Chat {
             ",
         )
         .bind(id as i64)
-        .fetch_optional(pool)
+        .fetch_optional(&self.pool)
         .await?;
         Ok(chat)
     }
@@ -114,14 +111,13 @@ impl CreateChat {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::test_util::get_test_pool;
     use anyhow::Result;
 
     #[tokio::test]
     async fn create_chat_should_work() -> Result<()> {
-        let (_tdb, pool) = get_test_pool(None).await;
+        let (_tdb, state) = AppState::new_for_test().await?;
         let input = CreateChat::new("", &[1, 2], false);
-        let chat = Chat::create(&input, 1, &pool).await?;
+        let chat = state.create_chat(&input, 1).await?;
 
         assert_eq!(chat.ws_id, 1);
         assert_eq!(chat.members.len(), 2);
@@ -132,9 +128,9 @@ mod tests {
 
     #[tokio::test]
     async fn create_public_named_chat_should_work() -> Result<()> {
-        let (_tdb, pool) = get_test_pool(None).await;
+        let (_tdb, state) = AppState::new_for_test().await?;
         let input = CreateChat::new("test", &[1, 2, 3], true);
-        let chat = Chat::create(&input, 1, &pool).await?;
+        let chat = state.create_chat(&input, 1).await?;
 
         assert_eq!(chat.ws_id, 1);
         assert_eq!(chat.members.len(), 3);
@@ -145,10 +141,8 @@ mod tests {
 
     #[tokio::test]
     async fn chat_get_by_id_should_work() -> Result<()> {
-        let (_tdb, pool) = get_test_pool(None).await;
-        let chat = Chat::get_by_id(1, &pool)
-            .await?
-            .expect("chat should exists");
+        let (_tdb, state) = AppState::new_for_test().await?;
+        let chat = state.get_chat_by_id(1).await?.expect("chat should exists");
 
         assert_eq!(chat.id, 1);
         assert_eq!(chat.name, Some("general".to_string()));
@@ -160,8 +154,8 @@ mod tests {
 
     #[tokio::test]
     async fn chat_fetch_all_should_work() -> Result<()> {
-        let (_tdb, pool) = get_test_pool(None).await;
-        let chats = Chat::fetch_all(1, &pool).await?;
+        let (_tdb, state) = AppState::new_for_test().await?;
+        let chats = state.fetch_all_chats(1).await?;
 
         assert_eq!(chats.len(), 4);
 
