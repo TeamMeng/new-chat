@@ -3,12 +3,38 @@
 -- create user table
 CREATE TABLE IF NOT EXISTS users (
     id BIGSERIAL PRIMARY KEY,
+    ws_id BIGINT NOT NULL,
     fullname VARCHAR(64) NOT NULL,
     email VARCHAR(64) NOT NULL UNIQUE,
     -- hashed argon2 password, length 97
     password_hash VARCHAR(97) NOT NULL,
     created_at TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP
 );
+
+-- workspace for users
+CREATE TABLE IF NOT EXISTS workspaces(
+    id BIGSERIAL PRIMARY KEY,
+    name VARCHAR(32) NOT NULL UNIQUE,
+    owner_id BIGINT NOT NULL REFERENCES users(id),
+    created_at TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP
+);
+
+-- add super user 0 and workspace 0
+BEGIN;
+INSERT INTO users(id, ws_id, fullname, email, password_hash)
+  VALUES (0, 0, 'super user', 'super@none.org', '');
+
+INSERT INTO workspaces(id, name, owner_id)
+  VALUES (0, 'none', 0);
+COMMIT;
+
+-- alter user table to make ws_id not null
+ALTER TABLE users
+  ALTER COLUMN ws_id SET NOT NULL;
+
+-- add foreign key constraint for ws_id for users
+ALTER TABLE users
+  ADD CONSTRAINT users_ws_id_fk FOREIGN KEY (ws_id) REFERENCES workspaces(id);
 
 -- create index for users for email
 CREATE UNIQUE INDEX IF NOT EXISTS email_index ON users(email);
@@ -23,6 +49,7 @@ CREATE TYPE chat_type AS ENUM(
 -- create chat table
 CREATE TABLE IF NOT EXISTS chats(
     id BIGSERIAL PRIMARY KEY,
+    ws_id BIGINT NOT NULL REFERENCES workspaces(id),
     name VARCHAR(64),
     TYPE chat_type NOT NULL,
     -- user id list
