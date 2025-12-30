@@ -1,5 +1,4 @@
 ### signup user1
-
 POST http://localhost:6688/api/signup
 Content-Type: application/json
 
@@ -20,7 +19,6 @@ Content-Type: application/json
     "password": "123456"
 }
 
-### Set token variable
 @token = {{siginin.response.body.token}}
 
 ### signup user2
@@ -44,7 +42,6 @@ Content-Type: application/json
     "password": "123456"
 }
 
-### Set token variable
 @token = {{siginin.response.body.token}}
 
 ### create chat

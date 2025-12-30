@@ -5,7 +5,6 @@ use uuid::Uuid;
 
 pub async fn set_request_id(req: Request, next: Next) -> Response {
     // if x-request-id exists, do nothing, otherwise generate a new one
-
     let mut res = next.run(req).await;
     let id = match res.headers().get(REQUEST_ID_HEADER) {
         Some(v) => Some(v.clone()),

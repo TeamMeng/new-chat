@@ -3,18 +3,17 @@ mod error;
 mod handlers;
 mod middlewares;
 mod models;
-mod utils;
 
-use crate::{
-    handlers::*,
-    middlewares::{set_layers, verify_chat, verify_token},
-    utils::{DecodingKey, EncodingKey},
-};
+use crate::{handlers::*, middlewares::verify_chat};
 use anyhow::Context;
 use axum::{
     Router,
     middleware::from_fn_with_state,
     routing::{get, post},
+};
+use chat_core::{
+    DecodingKey, EncodingKey, User,
+    middlewares::{TokenVerify, set_layers, verify_token},
 };
 use sqlx::PgPool;
 use std::{fmt, ops::Deref, sync::Arc};
@@ -55,15 +54,12 @@ pub async fn get_router(config: AppConfig) -> Result<Router, AppError> {
         .route("/upload", post(upload_handler))
         .nest("/chats", chat)
         .route("/files/{ws_id}/{*path}", get(file_handler))
-        .layer(from_fn_with_state(state.clone(), verify_token))
+        .layer(from_fn_with_state(state.clone(), verify_token::<AppState>))
         // routes doesn't need token verification
         .route("/signup", post(signup_handler))
         .route("/signin", post(signin_handler));
 
-    let app = Router::new()
-        .route("/", get(index_handler))
-        .nest("/api", api)
-        .with_state(state);
+    let app = Router::new().nest("/api", api).with_state(state);
 
     Ok(set_layers(app))
 }
@@ -101,6 +97,14 @@ impl fmt::Debug for AppStateInner {
         f.debug_struct("AppStateInner")
             .field("config", &self.config)
             .finish()
+    }
+}
+
+impl TokenVerify for AppState {
+    type Error = AppError;
+
+    fn verify(&self, token: &str) -> Result<User, Self::Error> {
+        Ok(self.dk.verify(token)?)
     }
 }
 

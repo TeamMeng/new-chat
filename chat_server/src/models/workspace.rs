@@ -1,9 +1,5 @@
-use sqlx::PgPool;
-
-use crate::{
-    AppError, AppState,
-    models::{ChatUser, Workspace},
-};
+use crate::{AppError, AppState};
+use chat_core::{ChatUser, Workspace};
 
 impl AppState {
     pub async fn create_workspace(&self, name: &str, user_id: u64) -> Result<Workspace, AppError> {
@@ -31,6 +27,28 @@ impl AppState {
         )
         .bind(name)
         .fetch_optional(&self.pool)
+        .await?;
+        Ok(ws)
+    }
+
+    pub async fn update_workspace_owner(
+        &self,
+        owner_id: u64,
+        id: u64,
+    ) -> Result<Workspace, AppError> {
+        let ws = sqlx::query_as(
+            "
+            UPDATE workspaces
+            SET owner_id = $1
+            WHERE id = $2 AND EXISTS (
+                SELECT 1 FROM users WHERE id = $1 AND ws_id = $2
+            )
+            RETURNING id, name, owner_id, created_at
+            ",
+        )
+        .bind(owner_id as i64)
+        .bind(id as i64)
+        .fetch_one(&self.pool)
         .await?;
         Ok(ws)
     }
@@ -66,26 +84,6 @@ impl AppState {
     }
 }
 
-impl Workspace {
-    pub async fn update_owner(&self, owner_id: u64, pool: &PgPool) -> Result<Workspace, AppError> {
-        let ws = sqlx::query_as(
-            "
-            UPDATE workspaces
-            SET owner_id = $1
-            WHERE id = $2 AND EXISTS (
-                SELECT 1 FROM users WHERE id = $1 AND ws_id = $2
-            )
-            RETURNING id, name, owner_id, created_at
-            ",
-        )
-        .bind(owner_id as i64)
-        .bind(self.id)
-        .fetch_one(pool)
-        .await?;
-        Ok(ws)
-    }
-}
-
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -102,7 +100,9 @@ mod tests {
         assert_eq!(ws.name, "test");
         assert_eq!(user.ws_id, ws.id);
 
-        let ws = ws.update_owner(user.id as _, &state.pool).await?;
+        let ws = state
+            .update_workspace_owner(user.id as _, ws.id as _)
+            .await?;
 
         assert_eq!(ws.owner_id, user.id);
 

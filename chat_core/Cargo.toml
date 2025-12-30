@@ -1,5 +1,5 @@
 [package]
-name = "notify-server"
+name = "chat_core"
 version = "0.1.0"
 edition = "2024"
 license = "MIT"
@@ -7,14 +7,14 @@ license = "MIT"
 [dependencies]
 anyhow = { workspace = true }
 axum = { workspace = true }
-axum-extra = { version = "0.12.3", features = ["typed-header"] }
-chat_core.workspace = true
-futures-util = "0.3.31"
+axum-extra = { workspace = true }
+chrono = { workspace = true }
+jwt-simple = { workspace = true }
 serde = { workspace = true }
-serde_yaml = { workspace = true }
 sqlx = { workspace = true }
-thiserror = { workspace = true }
 tokio = { workspace = true }
-tokio-stream = "0.1.17"
+tower = { workspace = true }
+tower-http = { workspace = true }
 tracing = { workspace = true }
 tracing-subscriber = { workspace = true }
+uuid = { workspace = true }

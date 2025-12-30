@@ -1,4 +1,4 @@
-use crate::{AppError, models::User};
+use crate::User;
 use jwt_simple::prelude::*;
 use std::ops::Deref;
 
@@ -11,25 +11,24 @@ pub struct EncodingKey(Ed25519KeyPair);
 pub struct DecodingKey(Ed25519PublicKey);
 
 impl EncodingKey {
-    pub fn load(pem: &str) -> Result<Self, AppError> {
+    pub fn load(pem: &str) -> Result<Self, jwt_simple::Error> {
         Ok(Self(Ed25519KeyPair::from_pem(pem)?))
     }
 
-    pub fn sign(&self, user: User) -> Result<String, AppError> {
+    pub fn sign(&self, user: User) -> Result<String, jwt_simple::Error> {
         let claims = Claims::with_custom_claims(user, Duration::from_secs(JWT_DURATION))
             .with_issuer(JWT_ISSUER)
             .with_audience(JWT_AUDIENCE);
-        Ok(self.0.sign(claims)?)
+        self.0.sign(claims)
     }
 }
 
 impl DecodingKey {
-    pub fn load(pem: &str) -> Result<Self, AppError> {
+    pub fn load(pem: &str) -> Result<Self, jwt_simple::Error> {
         Ok(Self(Ed25519PublicKey::from_pem(pem)?))
     }
 
-    #[allow(dead_code)]
-    pub fn verify(&self, token: &str) -> Result<User, AppError> {
+    pub fn verify(&self, token: &str) -> Result<User, jwt_simple::Error> {
         let options = VerificationOptions {
             allowed_issuers: Some(HashSet::from_strings(&[JWT_ISSUER])),
             allowed_audiences: Some(HashSet::from_strings(&[JWT_AUDIENCE])),

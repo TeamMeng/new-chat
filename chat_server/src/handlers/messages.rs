@@ -1,6 +1,6 @@
 use crate::{
     AppError, AppState,
-    models::{ChatFile, CreateMessage, ListMessages, User},
+    models::{ChatFile, CreateMessage, ListMessages},
 };
 use axum::{
     Extension, Json,
@@ -8,6 +8,7 @@ use axum::{
     http::{HeaderMap, StatusCode},
     response::IntoResponse,
 };
+use chat_core::User;
 use tokio::fs::{self};
 use tracing::{info, warn};
 

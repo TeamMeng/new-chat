@@ -1,8 +1,7 @@
+use crate::middlewares::REQUEST_ID_HEADER;
 use axum::{extract::Request, http::HeaderValue, middleware::Next, response::Response};
 use tokio::time::Instant;
 use tracing::warn;
-
-use crate::middlewares::REQUEST_ID_HEADER;
 
 const REQUEST_SERVER_TIME_HEADER: &str = "x-server-time";
 
