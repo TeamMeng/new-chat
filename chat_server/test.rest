@@ -24,7 +24,6 @@ Content-Type: application/json
 @token = {{siginin.response.body.token}}
 
 ### signup user2
-
 POST http://localhost:6688/api/signup
 Content-Type: application/json
 
@@ -81,4 +80,18 @@ Hello, World!
 
 ### get files
 GET http://localhost:6688/api/files/1/0a0/a9f/2a6772942557ab5355d76af442f8f65e01.txt
+Authorization: Bearer {{token}}
+
+### send a message
+POST http://localhost:6688/api/chats/1
+Content-Type: application/json
+Authorization: Bearer {{token}}
+
+{
+    "content": "Hello World!",
+    "files": []
+}
+
+### get messages
+GET http://localhost:6688/api/chats/1/messages?limit=6&last_id=5
 Authorization: Bearer {{token}}

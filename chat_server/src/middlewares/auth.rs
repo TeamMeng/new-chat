@@ -42,9 +42,8 @@ pub async fn verify_token(State(state): State<AppState>, req: Request, next: Nex
 
 #[cfg(test)]
 mod tests {
-    use crate::models::User;
-
     use super::*;
+    use crate::models::User;
     use anyhow::Result;
     use axum::{Router, body::Body, middleware::from_fn_with_state, routing::get};
     use tower::ServiceExt;

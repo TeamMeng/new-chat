@@ -7,7 +7,7 @@ mod utils;
 
 use crate::{
     handlers::*,
-    middlewares::{set_layers, verify_token},
+    middlewares::{set_layers, verify_chat, verify_token},
     utils::{DecodingKey, EncodingKey},
 };
 use anyhow::Context;
@@ -28,7 +28,6 @@ pub(crate) struct AppState {
     inner: Arc<AppStateInner>,
 }
 
-#[allow(unused)]
 pub(crate) struct AppStateInner {
     pub(crate) config: AppConfig,
     pub(crate) ek: EncodingKey,
@@ -39,18 +38,22 @@ pub(crate) struct AppStateInner {
 pub async fn get_router(config: AppConfig) -> Result<Router, AppError> {
     let state = AppState::try_new(config).await?;
 
-    let api = Router::new()
-        .route("/users", get(list_chat_users_handler))
-        .route("/chats", get(list_chat_handler).post(create_chat_handler))
+    let chat = Router::new()
         .route(
-            "/chats/{id}",
+            "/{id}",
             get(get_chat_handler)
                 .patch(update_chat_handler)
                 .delete(delete_chat_handler)
                 .post(send_message_handler),
         )
-        .route("/chats/{id}/messages", get(list_messages_handler))
+        .route("/{id}/messages", get(list_messages_handler))
+        .layer(from_fn_with_state(state.clone(), verify_chat))
+        .route("/", get(list_chat_handler).post(create_chat_handler));
+
+    let api = Router::new()
+        .route("/users", get(list_chat_users_handler))
         .route("/upload", post(upload_handler))
+        .nest("/chats", chat)
         .route("/files/{ws_id}/{*path}", get(file_handler))
         .layer(from_fn_with_state(state.clone(), verify_token))
         // routes doesn't need token verification

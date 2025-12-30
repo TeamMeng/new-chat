@@ -16,7 +16,7 @@ impl ChatFile {
     }
 
     pub fn url(&self) -> String {
-        format!("/files/{}/{}", self.ws_id, self.hash_to_path())
+        format!("/files/{}", self.hash_to_path())
     }
 
     pub fn path(&self, base_url: &Path) -> PathBuf {
@@ -35,16 +35,18 @@ impl FromStr for ChatFile {
 
     fn from_str(s: &str) -> Result<Self, Self::Err> {
         let Some(s) = s.strip_prefix("/files/") else {
-            return Err(AppError::ChatFileError(
-                "invalid chat file path".to_string(),
-            ));
+            return Err(AppError::ChatFileError(format!(
+                "invalid chat file path: {}",
+                s
+            )));
         };
 
         let parts: Vec<&str> = s.split('/').collect();
         if parts.len() != 4 {
-            return Err(AppError::ChatFileError(
-                "file path doesn't valid".to_string(),
-            ));
+            return Err(AppError::ChatFileError(format!(
+                "file path: {} doesn't valid",
+                s
+            )));
         }
 
         let Ok(ws_id) = parts[0].parse::<u64>() else {
