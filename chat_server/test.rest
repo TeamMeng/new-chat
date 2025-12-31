@@ -1,48 +1,48 @@
-### signup user1
+### signup user
 POST http://localhost:6688/api/signup
 Content-Type: application/json
 
 {
-    "fullname": "TeamMeng",
-    "workspace": "acme",
-    "email": "TeamMeng@123.com",
-    "password": "123456"
+    "workspace": "Acme",
+    "fullname": "Team Alice",
+    "email": "Alice@123.com",
+    "password": "hunter42"
 }
 
-### signin user1 (valid)
-# @name siginin
-POST http://localhost:6688/api/signin
-Content-Type: application/json
-
-{
-    "email": "TeamMeng@123.com",
-    "password": "123456"
-}
-
-@token = {{siginin.response.body.token}}
-
-### signup user2
+### signup user
 POST http://localhost:6688/api/signup
 Content-Type: application/json
 
 {
-    "fullname": "TeamZhang",
-    "workspace": "acme",
-    "email": "TeamZhang@123.com",
-    "password": "123456"
+    "workspace": "Acme",
+    "fullname": "Team Meng",
+    "email": "Meng@123.com",
+    "password": "hunter42"
 }
 
-### signin user2 (valid)
-# @name siginin
+### signin user
+
+# @name sigin
+
 POST http://localhost:6688/api/signin
 Content-Type: application/json
 
 {
-    "email": "TeamZhang@123.com",
-    "password": "123456"
+    "email": "Meng@123.com",
+    "password": "hunter42"
 }
 
-@token = {{siginin.response.body.token}}
+@token = {{sigin.response.body.token}}
+
+
+### signin user -> password failed
+POST http://localhost:6688/api/signin
+Content-Type: application/json
+
+{
+    "email": "Meng@123.com",
+    "password": "hunter42"
+}
 
 ### create chat
 POST http://localhost:6688/api/chats
@@ -50,12 +50,12 @@ Content-Type: application/json
 Authorization: Bearer {{token}}
 
 {
-    "name": "acme",
+    "name": "Acme",
     "members": [1, 2],
     "public": false
 }
 
-### get chat api
+### get chat list
 GET http://localhost:6688/api/chats
 Authorization: Bearer {{token}}
 
@@ -64,6 +64,7 @@ GET http://localhost:6688/api/users
 Authorization: Bearer {{token}}
 
 ### upload files
+
 POST http://localhost:6688/api/upload
 Authorization: Bearer {{token}}
 Content-Type: multipart/form-data; boundary=MyBoundary
@@ -76,10 +77,10 @@ Hello, World!
 --MyBoundary--
 
 ### get files
-GET http://localhost:6688/api/files/1/0a0/a9f/2a6772942557ab5355d76af442f8f65e01.txt
+GET http://localhost:6688/api/files/1/005/efb/4c143b8d531411ecd78f2effa226bfd24d.txt
 Authorization: Bearer {{token}}
 
-### send a message
+###
 POST http://localhost:6688/api/chats/1
 Content-Type: application/json
 Authorization: Bearer {{token}}

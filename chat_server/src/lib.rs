@@ -51,20 +51,19 @@ pub async fn get_router(config: AppConfig) -> Result<Router, AppError> {
 
     let api = Router::new()
         .route("/users", get(list_chat_users_handler))
-        .route("/upload", post(upload_handler))
         .nest("/chats", chat)
+        .route("/upload", post(upload_handler))
         .route("/files/{ws_id}/{*path}", get(file_handler))
         .layer(from_fn_with_state(state.clone(), verify_token::<AppState>))
         // routes doesn't need token verification
-        .route("/signup", post(signup_handler))
-        .route("/signin", post(signin_handler));
+        .route("/signin", post(signin_handler))
+        .route("/signup", post(signup_handler));
 
     let app = Router::new().nest("/api", api).with_state(state);
 
     Ok(set_layers(app))
 }
 
-// when use state.config == state.inner.config
 impl Deref for AppState {
     type Target = AppStateInner;
 
