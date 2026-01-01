@@ -2,14 +2,14 @@ use crate::{AppEvent, AppState};
 use axum::{
     Extension,
     extract::State,
-    response::sse::{Event, Sse},
+    response::{Sse, sse::Event},
 };
 use axum_extra::{TypedHeader, headers};
 use chat_core::User;
 use futures_util::Stream;
 use std::{convert::Infallible, time::Duration};
 use tokio::sync::broadcast;
-use tokio_stream::{StreamExt as _, wrappers::BroadcastStream};
+use tokio_stream::{StreamExt, wrappers::BroadcastStream};
 use tracing::info;
 
 const CHANNEL_CAPACITY: usize = 256;
@@ -31,6 +31,7 @@ pub(crate) async fn sse_handler(
         state.users.insert(user_id, tx);
         rx
     };
+    info!("User {} subscribed", user_id);
 
     let stream = BroadcastStream::new(rx).filter_map(|v| v.ok()).map(|v| {
         let name = match v.as_ref() {

@@ -1,30 +1,38 @@
 <!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+<html>
+  <head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <title>SSE handler</title>
-</head>
-<body>
+    <meta name="description" content="">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="stylesheet" href="">
+  </head>
+  <body>
+
     <h1>Server Sent Events</h1>
 
     <script lang="javascript">
-        var source = new EventSource("/events");
-        source.onmessage = function(event) {
-            console.log("Got:", event.data);
-        };
-        source.addEventListener("NewChat", function(event) {
-            console.log("NewChat:", event.data);
-        })
-        source.addEventListener("AddToUser", function(event) {
-            console.log("AddToUser:", event.data);
-        })
-        source.addEventListener("RemoveFromChat", function(event) {
-            console.log("RemoveFromChat:", event.data);
-        })
-        source.addEventListener("NewMessage", function(event) {
-            console.log("NewMessage:", event.data);
-        })
+      let token = 'eyJhbGciOiJFZERTQSIsInR5cCI6IkpXVCJ9.eyJpYXQiOjE3NjcyNjA2NDEsImV4cCI6MTc2Nzg2NTQ0MSwibmJmIjoxNzY3MjYwNjQxLCJpc3MiOiJjaGF0X3NlcnZlciIsImF1ZCI6ImNoYXRfd2ViIiwiaWQiOjEsIndzX2lkIjoxLCJmdWxsbmFtZSI6IlRlYW1NZW5nIiwiZW1haWwiOiJUZWFtTWVuZ0AxMjMuY29tIiwiY3JlYXRlZF9hdCI6IjIwMjUtMTItMzFUMDM6NDc6MzMuMTEyNzQxWiJ9.aS9azO2slMqcdmYjU2o0RVRHRhIEQDUO3M0uJp0aYQJIxmCSDzZ7E9DsuWmcFI0P3Nn1bVdDffn2hE9R-wDxDA';
+      let source = new EventSource(`/events?access_token=${token}`);
+      source.onmessage = function(event) {
+        console.log("Got:", event.data);
+      };
+      source.addEventListener("NewChat", function(event) {
+        console.log("NewChat:", event.data);
+      });
+
+      source.addEventListener("AddToChat", function(event) {
+        console.log("AddToChat:", event.data);
+      });
+
+      source.addEventListener("RemoveFromChat", function(event) {
+        console.log("RemoveFromChat:", event.data);
+      });
+
+      source.addEventListener("NewMessage", function(event) {
+        console.log("NewMessage:", event.data);
+      });
     </script>
-</body>
+  </body>
 </html>
