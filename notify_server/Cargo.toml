@@ -8,7 +8,7 @@ license = "MIT"
 anyhow = { workspace = true }
 axum = { workspace = true }
 axum-extra = { version = "0.12.3", features = ["typed-header"] }
-chat_core.workspace = true
+chat_core = { workspace = true }
 dashmap = "6.1.0"
 futures-util = "0.3.31"
 jwt-simple = { workspace = true }

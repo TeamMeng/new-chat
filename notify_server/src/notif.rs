@@ -8,7 +8,7 @@ use std::{collections::HashSet, sync::Arc};
 use tracing::{info, warn};
 
 #[derive(Debug, Serialize, Deserialize)]
-#[serde(tag = "type")]
+#[serde(tag = "event")]
 pub enum AppEvent {
     NewChat(Chat),
     AddToChat(Chat),
