@@ -34,6 +34,12 @@ tower = { workspace = true }
 tower-http = { workspace = true }
 tracing = { workspace = true }
 tracing-subscriber = { workspace = true }
+utoipa = { workspace = true }
+utoipa-axum = "0.2.0"
+utoipa-rapidoc = { version = "6.0.0", features = ["axum"] }
+utoipa-redoc = { version = "6.0.0", features = ["axum"] }
+utoipa-scalar = { version = "0.3.0", features = ["axum"] }
+utoipa-swagger-ui = { version = "9.0.2", features = ["axum"] }
 uuid = { workspace = true }
 
 [dev-dependencies]

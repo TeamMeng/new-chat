@@ -1,12 +1,22 @@
-use crate::{AppError, AppState, models::CreateChat};
+use crate::{AppError, AppState, error::ErrorOutput, models::CreateChat};
 use axum::{
     Extension, Json,
     extract::{Path, State},
     http::StatusCode,
     response::IntoResponse,
 };
-use chat_core::User;
+use chat_core::{Chat, User};
 
+#[utoipa::path(
+    get,
+    path = "/api/chats",
+    responses(
+        (status = 200, description = "List of chats", body = Vec<Chat>)
+    ),
+    security(
+        ("token"=[])
+    )
+)]
 pub(crate) async fn list_chat_handler(
     Extension(user): Extension<User>,
     State(state): State<AppState>,
@@ -15,6 +25,20 @@ pub(crate) async fn list_chat_handler(
     Ok((StatusCode::OK, Json(chats)).into_response())
 }
 
+#[utoipa::path(
+    get,
+    path = "/api/chats/{id}",
+    params(
+        ("id" = u64, Path, description = "Chat id")
+    ),
+    responses(
+        (status = 200, description = "Get found", body = Chat),
+        (status = 400, description = "Get not found", body = ErrorOutput)
+    ),
+    security(
+        ("token"=[])
+    )
+)]
 pub(crate) async fn get_chat_handler(
     State(state): State<AppState>,
     Path(id): Path<u64>,
@@ -38,6 +62,16 @@ pub(crate) async fn delete_chat_handler() -> impl IntoResponse {
     "delete chat"
 }
 
+#[utoipa::path(
+    post,
+    path = "/api/chats/",
+    responses(
+        (status = 201, description = "Chat created", body = Chat)
+    ),
+    security(
+        ("token"=[])
+    )
+)]
 pub(crate) async fn create_chat_handler(
     Extension(user): Extension<User>,
     State(state): State<AppState>,

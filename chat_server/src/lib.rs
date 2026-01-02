@@ -3,8 +3,9 @@ mod error;
 mod handlers;
 mod middlewares;
 mod models;
+mod openapi;
 
-use crate::{handlers::*, middlewares::verify_chat};
+use crate::{handlers::*, middlewares::verify_chat, openapi::OpenApiRouter};
 use anyhow::Context;
 use axum::{
     Router,
@@ -57,7 +58,7 @@ pub async fn get_router(state: AppState) -> Result<Router, AppError> {
         .route("/signin", post(signin_handler))
         .route("/signup", post(signup_handler));
 
-    let app = Router::new().nest("/api", api).with_state(state);
+    let app = Router::new().openapi().nest("/api", api).with_state(state);
 
     Ok(set_layers(app))
 }

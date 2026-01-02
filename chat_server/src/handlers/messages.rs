@@ -1,5 +1,6 @@
 use crate::{
     AppError, AppState,
+    error::ErrorOutput,
     models::{ChatFile, CreateMessage, ListMessages},
 };
 use axum::{
@@ -8,10 +9,24 @@ use axum::{
     http::{HeaderMap, StatusCode},
     response::IntoResponse,
 };
-use chat_core::User;
+use chat_core::{Message, User};
 use tokio::fs::{self};
 use tracing::{info, warn};
 
+#[utoipa::path(
+    post,
+    path = "/api/chats/{id}",
+    params(
+        ("id" = u64, Path, description = "Chat id"),
+    ),
+    responses(
+        (status = 201, description = "Message created", body = Message),
+        (status = 400, description = "Invalid input", body = ErrorOutput),
+    ),
+    security(
+        ("token"=[])
+    )
+)]
 pub(crate) async fn send_message_handler(
     Extension(user): Extension<User>,
     State(state): State<AppState>,
@@ -23,6 +38,21 @@ pub(crate) async fn send_message_handler(
     Ok((StatusCode::CREATED, Json(message)).into_response())
 }
 
+#[utoipa::path(
+    get,
+    path = "/api/chats/{id}/messages",
+    params(
+        ("id" = u64, Path, description = "Chat id"),
+        ListMessages
+    ),
+    responses(
+        (status = 200, description = "List of messages", body = Vec<Message>),
+        (status = 400, description = "Invalid input", body = ErrorOutput),
+    ),
+    security(
+        ("token"=[])
+    )
+)]
 pub(crate) async fn list_messages_handler(
     State(state): State<AppState>,
     Path(chat_id): Path<u64>,
