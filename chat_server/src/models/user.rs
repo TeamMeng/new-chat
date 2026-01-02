@@ -74,7 +74,7 @@ impl AppState {
 
         let password_hash = hash_password(&input.password)?;
 
-        let user: User = sqlx::query_as(
+        let mut user: User = sqlx::query_as(
             "
             INSERT INTO users (ws_id, fullname, email, password_hash)
             VALUES ($1, $2, $3, $4)
@@ -87,6 +87,8 @@ impl AppState {
         .bind(password_hash)
         .fetch_one(&self.pool)
         .await?;
+
+        user.ws_name = ws.name.clone();
 
         if ws.owner_id == 0 {
             self.update_workspace_owner(user.id as _, ws.id as _)
@@ -114,7 +116,16 @@ impl AppState {
                 let password_hash = mem::take(&mut user.password_hash);
                 let is_valid =
                     verify_password(&input.password, &password_hash.unwrap_or_default())?;
-                if is_valid { Ok(Some(user)) } else { Ok(None) }
+                if is_valid {
+                    let ws = self
+                        .find_workspace_by_id(user.ws_id as _)
+                        .await?
+                        .expect("workspace should exists");
+                    user.ws_name = ws.name;
+                    Ok(Some(user))
+                } else {
+                    Ok(None)
+                }
             }
             None => Ok(None),
         }
