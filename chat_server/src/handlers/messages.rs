@@ -13,6 +13,7 @@ use chat_core::{Message, User};
 use tokio::fs::{self};
 use tracing::{info, warn};
 
+/// Send a new message in the chat
 #[utoipa::path(
     post,
     path = "/api/chats/{id}",
@@ -38,6 +39,7 @@ pub(crate) async fn send_message_handler(
     Ok((StatusCode::CREATED, Json(message)).into_response())
 }
 
+/// List all message in the chat
 #[utoipa::path(
     get,
     path = "/api/chats/{id}/messages",

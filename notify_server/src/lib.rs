@@ -6,6 +6,7 @@ mod sse;
 use anyhow::Result;
 use axum::{
     Router,
+    http::Method,
     middleware::from_fn_with_state,
     response::{Html, IntoResponse},
     routing::get,
@@ -18,6 +19,7 @@ use dashmap::DashMap;
 use sse::sse_handler;
 use std::{ops::Deref, sync::Arc};
 use tokio::sync::broadcast;
+use tower_http::cors::{Any, CorsLayer};
 
 pub use config::AppConfig;
 pub use error::AppError;
@@ -37,6 +39,17 @@ pub struct AppStateInner {
 const INDEX_HTML: &str = include_str!("../index.html");
 
 pub async fn get_router(config: AppConfig) -> Result<Router> {
+    let cors = CorsLayer::new()
+        .allow_methods([
+            Method::GET,
+            Method::POST,
+            Method::PATCH,
+            Method::DELETE,
+            Method::PUT,
+        ])
+        .allow_headers(Any)
+        .allow_origin(Any);
+
     let state = AppState::new(config);
 
     setup_pg_listener(state.clone()).await?;
@@ -44,6 +57,7 @@ pub async fn get_router(config: AppConfig) -> Result<Router> {
     let app = Router::new()
         .route("/events", get(sse_handler))
         .layer(from_fn_with_state(state.clone(), verify_token::<AppState>))
+        .layer(cors)
         .route("/", get(index_handler))
         .with_state(state.clone());
 
